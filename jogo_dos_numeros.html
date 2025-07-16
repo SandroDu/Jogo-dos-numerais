@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Jogo: Ligue os Pontos - Números e Estrelas</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      text-align: center;
+      padding: 20px;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    #game-board {
+      display: grid;
+      grid-template-columns: repeat(5, 120px);
+      gap: 30px; /* Espaço entre os quadrados */
+      justify-content: center;
+      margin-top: 30px;
+      padding: 20px; /* Espaçamento interno do grid */
+    }
+
+    .card {
+      background-color: #87cefa;
+      width: 120px;
+      height: 120px;
+      border-radius: 10px;
+      font-weight: bold;
+      user-select: none;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      cursor: pointer;
+      transition: background 0.3s;
+      padding: 10px;
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+
+    .card span {
+      display: block;
+      font-size: 22px;
+      line-height: 1.2;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      white-space: normal;
+    }
+
+    .card.number span {
+      font-size: 36px;
+    }
+
+    .card:hover {
+      background-color: #76bde8;
+    }
+
+    .matched {
+      background-color: #90ee90;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    #messageBox {
+      display: none;
+      background: white;
+      padding: 20px;
+      border: 2px solid #d33;
+      border-radius: 8px;
+      width: 300px;
+      margin: 30px auto;
+    }
+
+    #messageBox p {
+      font-size: 18px;
+      color: #d33;
+    }
+
+    #messageBox button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      background-color: #4caf50;
+      color: white;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Ligue os Pontos</h1>
+  <p>Associe os números às suas representações em estrelas.</p>
+
+  <div id="game-board"></div>
+
+  <div id="messageBox">
+    <p>Você errou. Tente novamente!</p>
+    <button onclick="resumeGame()">Tentar novamente</button>
+  </div>
+
+  <script>
+    const numbers = [
+      { value: "0", symbol: "" },
+      { value: "1", symbol: "★" },
+      { value: "2", symbol: "★★" },
+      { value: "3", symbol: "★★★" },
+      { value: "4", symbol: "★★★★" },
+      { value: "5", symbol: "★★★★★" },
+      { value: "6", symbol: "★★★★★★" },
+      { value: "7", symbol: "★★★★★★★" },
+      { value: "8", symbol: "★★★★★★★★" },
+      { value: "9", symbol: "★★★★★★★★★" }
+    ];
+
+    let firstCard = null;
+    let lockGame = false;
+
+    const numCards = [...numbers.map(n => ({ text: n.value, match: n.symbol, type: "number" }))];
+    const symCards = [...numbers.map(n => ({ text: n.symbol, match: n.value, type: "symbol" }))];
+
+    const allCards = [...numCards, ...symCards].sort(() => 0.5 - Math.random());
+
+    const board = document.getElementById("game-board");
+
+    allCards.forEach((cardObj) => {
+      const div = document.createElement("div");
+      div.classList.add("card");
+      if (cardObj.type === "number") {
+        div.classList.add("number");
+      }
+      div.dataset.match = cardObj.match;
+      div.dataset.type = cardObj.type;
+
+      const span = document.createElement("span");
+      span.textContent = cardObj.text;
+      div.appendChild(span);
+
+      div.addEventListener("click", () => handleClick(div));
+      board.appendChild(div);
+    });
+
+    function handleClick(card) {
+      if (lockGame || card.classList.contains("matched")) return;
+
+      card.classList.add("selected");
+
+      if (!firstCard) {
+        firstCard = card;
+      } else {
+        lockGame = true;
+
+        const isMatch = firstCard.dataset.match === card.innerText &&
+                        card.dataset.match === firstCard.innerText;
+
+        if (isMatch) {
+          firstCard.classList.add("matched");
+          card.classList.add("matched");
+          resetSelection();
+        } else {
+          document.getElementById("messageBox").style.display = "block";
+        }
+      }
+    }
+
+    function resetSelection() {
+      firstCard = null;
+      lockGame = false;
+      const selected = document.querySelectorAll(".selected");
+      selected.forEach(el => el.classList.remove("selected"));
+    }
+
+    function resumeGame() {
+      document.getElementById("messageBox").style.display = "none";
+      resetSelection();
+    }
+  </script>
+</body>
+</html>
